@@ -1,0 +1,51 @@
+<style>
+tr:nth-child(odd) {
+  border-left: 5px solid #CCC;
+  background-color: #F3F3F3;
+}
+tr:nth-child(even) {
+  border-left: 5px solid #EEE;
+  background-color: #FAFAFA;
+}
+.field { color: #0AA; }
+.type  { color: #AA0; }
+th {
+  background-color: #EEE;
+}
+td, th {
+  padding: 6px;
+  vertical-align: top;
+}
+table {
+  width:100%;
+  font-family: monospace;
+  text-align: left;
+  border-collapse: collapse;
+  margin: 0px
+}
+</style>
+
+<table>
+<tr><td class="field">bar</td><td class="doc"></td><td class="type">{}</td><td class="example"><table>
+<tr><td class="field">firstField</td><td class="doc">the first field</td><td class="type">string</td><td class="example">"some string"</td></tr>
+<tr><td class="field">thisField</td><td class="doc">this field is numeric</td><td class="type">int</td><td class="example">100</td></tr>
+<tr><td class="field">anInt</td><td class="doc">this field has an example value</td><td class="type">int</td><td class="example">123</td></tr>
+<tr><td class="field">foo</td><td class="doc"></td><td class="type">{}</td><td class="example"><table>
+<tr><td class="field">value</td><td class="doc"></td><td class="type">float</td><td class="example">2.0</td></tr>
+<tr><td class="field">name</td><td class="doc"></td><td class="type">string</td><td class="example">"Iain"</td></tr>
+</table></td></tr>
+<tr><td class="field">bar</td><td class="doc"></td><td class="type">{}</td><td class="example"><table>
+<tr><td class="field">value</td><td class="doc">the value in meters</td><td class="type">float</td><td class="example">2.0</td></tr>
+<tr><td class="field">name</td><td class="doc">name of the person</td><td class="type">string</td><td class="example">"Paul"</td></tr>
+</table></td></tr>
+<tr><td class="field">list</td><td class="doc">list of strings</td><td class="type">[]</td><td class="example"><table><tr><td class="type">string</td><td class="example">"foo"</td></tr></table></td></tr>
+<tr><td class="field">objects</td><td class="doc">list of objects</td><td class="type">[]</td><td class="example"><table><tr><td class="type">{}</td><td class="example"><table>
+<tr><td class="field">thing</td><td class="doc"></td><td class="type">{}</td><td class="example"><table>
+<tr><td class="field">name</td><td class="doc"></td><td class="type">string</td><td class="example">"some string"</td></tr>
+<tr><td class="field">food</td><td class="doc"></td><td class="type">string</td><td class="example">"some string"</td></tr>
+<tr><td class="field">age</td><td class="doc"></td><td class="type">int</td><td class="example">100</td></tr>
+</table></td></tr>
+</table></td></tr></table></td></tr>
+</table></td></tr>
+<tr><td class="field">another</td><td class="doc"></td><td class="type">string</td><td class="example">"hello"</td></tr>
+</table>
