@@ -72,4 +72,7 @@ And render to different formats, i.e.
 }
 ```
 **as a helpful? html table**
+```scala
+> println(RenderHtml.render(testObj))
+```
 [example.html](http://htmlpreview.github.io/?https://github.com/tobias-johansson/json-spec/blob/master/example.html)
