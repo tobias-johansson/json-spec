@@ -3,11 +3,13 @@ object JsonSpec {
 
   // === Data ===============================================
 
-  trait Type { def name: String }
-  case class Object    ( fields: Field* ) extends Type { val name = "{}" }
+  sealed trait Type { def name: String }
+  case class Object    ( _name: Option[String], fields: Field* ) extends Type { val name = _name getOrElse "{}" }
   case class Array     ( tpe: Type ) extends Type { val name = "[]" }
+  case class Enum      ( name: String, lit: String, lits: String* ) extends Type
   case class NamedType ( name: String, example: Option[String] ) extends Type
   case class Field     ( name: String, tpe: Type, example: Option[String], doc: Option[String] )
+  case class Reference ( tpe: Type ) extends Type { val name = tpe.name }
 
   // === Syntax =============================================
 
@@ -15,11 +17,13 @@ object JsonSpec {
     def apply(name: String) = NamedType(name, None)
   }
 
-  def obj(fields: Field*) = Object(fields:_*)
+  def obj(fields: Field*) = Object(None, fields:_*)
+  def obj(name: String)(fields: Field*) = Object(Option(name), fields:_*)
   def arr(tpe: Type) = Array(tpe)
+  def ref(tpe: Type) = Reference(tpe)
 
   implicit class StringIsFieldExt(name: String) {
-    def is(fields: Field*): Field = Field(name, Object(fields:_*), None, None)
+    def is(fields: Field*): Field = Field(name, Object(None, fields:_*), None, None)
     def is(tpe: Type): Field      = Field(name, tpe, None, None)
   }
 
@@ -32,12 +36,20 @@ object JsonSpec {
     def eg(example: Any) = tpe.copy(example = makeExample(example))
   }
 
+  implicit class ObjectReqExt(tpe: Object) {
+    def * = ref(tpe)
+  }
+
   implicit class FieldEgExt(field: Field) {
     def eg(example: Any) = field.copy(example = makeExample(example))
   }
 
   implicit class FieldDocExt(field: Field) {
     def doc(doc: String) = field.copy(doc = Option(doc))
+  }
+
+  implicit class FieldRefExt(field: Field) {
+    def * = field.copy(tpe = ref(field.tpe))
   }
 
 }
@@ -58,10 +70,12 @@ object RenderJson extends Renderer {
       case Array(tpe) =>
         val inner = render(tpe, ind)
         s"[ $inner ]"
-      case Object(fs @ _*) =>
+      case Object(_, fs @ _*) =>
         val newInd = ind + "  "
         val fields = fs map (render(_, newInd)) mkString (",\n")
         s"{\n$fields\n$ind}"
+      case Enum(name, lit, lits @ _*) =>
+        lit
     }
 
   def render(field: Field, ind: String): String = {
@@ -85,10 +99,12 @@ object RenderHtml extends Renderer {
         ex getOrElse "null"
       case Array(tpe) =>
         "<table><tr>" + typeCell(tpe.name) + exampleCell(render(tpe)) + "</tr></table>"
-      case Object(fs @ _*) =>
+      case Object(name, fs @ _*) =>
         val fields = fs map (render) mkString ("\n")
-        // s"<table>\n<tr><th>field</th><th>type</th><th>example</th></tr>$fields\n</table>"
-        s"<table>\n$fields\n</table>"
+        val namediv = name map (n => s"""<div class="name">$n</div>""" ) getOrElse ""
+        s"$namediv<table>\n$fields\n</table>"
+      case Reference(tpe) => tpe.name
+      case Enum(name, lit, lits @ _*) => lit
     }
 
   def render(field: Field): String = {
@@ -106,41 +122,3 @@ object RenderHtml extends Renderer {
   def exampleCell(e: String) = s"""<td class="example">$e</td>"""
   def docCell(d: String)     = s"""<td class="doc">$d</td>"""
 }
-
-// === Example ============================================
-
-import JsonSpec._
-
-val string = Type("string") eg "some string"
-val int    = Type("int")    eg 100
-val float  = Type("float")  eg 1.0
-
-val myObj = obj (
-  "firstField" is string     doc "the first field",
-  "thisField"  is int        doc "this field is numeric",
-  "anInt"      is int eg 123 doc "this field has an example value",
-  "foo" is obj (
-    "value" is float  eg 2.0,
-    "name"  is string eg "Iain"
-  ),
-  "bar" is obj (
-    "value" is float  eg 2.0    doc "the value in meters",
-    "name"  is string eg "Paul" doc "name of the person"
-  ),
-  "list" is arr ( string eg "foo" ) doc "list of strings",
-  "objects" is arr ( obj (
-    "thing" is obj (
-      "name" is string,
-      "food" is string,
-      "age"  is int
-    )
-  )) doc "list of objects"
-)
-
-val testObj = Object (
-  "bar"     is myObj,
-  "another" is string eg "hello"
-)
-
-// println(RenderJson.render(testObj))
-println(RenderHtml.render(testObj))
